@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Persona, Gate, Staff } from '../types';
 import { 
-  MapPin, HeartPulse, Send, MessageSquareCode, Truck, Bus, 
+  HeartPulse, Send, Truck, Bus, 
   Trash2, Flame, Languages, CheckSquare, AlertTriangle, Ticket,
   ShieldCheck, Volume2, Database, Lock, Radio
 } from 'lucide-react';
@@ -13,7 +13,7 @@ interface PersonaDashboardProps {
   onTriggerSOS: (desc: string, loc: string) => void;
 }
 
-export default function PersonaDashboard({ activePersona, gates, staff, onTriggerSOS }: PersonaDashboardProps) {
+export default function PersonaDashboard({ activePersona, staff, onTriggerSOS }: PersonaDashboardProps) {
   // Mobile Fan Copilot Chat Mockup
   const [fanChatQuery, setFanChatQuery] = useState('');
   const [fanChatHistory, setFanChatHistory] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
