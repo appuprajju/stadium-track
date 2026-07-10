@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const WS_URL = API_URL.replace(/^http/, "ws")
   const [activePersona, setActivePersona] = useState<Persona>('OPERATIONS');
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'SPECS' | 'DIAG_AUDIT'>('DASHBOARD');
   const [auditLogs, setAuditLogs] = useState<string[]>([]);
@@ -145,7 +147,7 @@ export default function App() {
 
   const connectWebSocket = () => {
     try {
-      ws.current = new WebSocket('ws://localhost:3000/ws/operations');
+      ws.current = new WebSocket(`${WS_URL}/ws/operations`);
 
       ws.current.onopen = () => {
         setConnected(true);
@@ -222,7 +224,7 @@ export default function App() {
     if (connected && ws.current) {
       // Send to API gateway
       try {
-        await fetch('http://localhost:3000/api/v1/incidents/trigger', {
+        await fetch(`${API_URL}/api/v1/incidents/trigger`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
