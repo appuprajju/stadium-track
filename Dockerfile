@@ -1,5 +1,5 @@
 # Multi-stage build for frontend SPA
-FROM node:20-alpine
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 
