@@ -5,49 +5,130 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  REPOSITORY: stadiummind-repo
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
-      - uses: actions/checkout@v4
 
-      - uses: google-github-actions/auth@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      #####################################################
+      # Authenticate with Google Cloud
+      #####################################################
+
+      - id: auth
+        name: Authenticate
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
+      #####################################################
+      # Setup Cloud SDK
+      #####################################################
+
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker
-        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      #####################################################
+      # Configure Docker Authentication
+      #####################################################
 
-      - name: Build Frontend
+      - name: Configure Docker
         run: |
-          gcloud builds submit . \
-          --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/frontend
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      #####################################################
+      # Setup Docker Buildx
+      #####################################################
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      #####################################################
+      # Build Frontend
+      #####################################################
+
+      - name: Build Frontend Image
+        run: |
+          docker build \
+          -t us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend:latest \
+          .
+
+      #####################################################
+      # Push Frontend
+      #####################################################
+
+      - name: Push Frontend Image
+        run: |
+          docker push \
+          us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend:latest
+
+      #####################################################
+      # Deploy Frontend
+      #####################################################
 
       - name: Deploy Frontend
         run: |
           gcloud run deploy stadiummind-frontend \
-          --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/frontend \
-          --region us-central1 \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend:latest \
+          --region $REGION \
           --platform managed \
           --allow-unauthenticated
 
-      - name: Build Backend
+      #####################################################
+      # Build Backend
+      #####################################################
+
+      - name: Build Backend Image
         run: |
-          gcloud builds submit backend \
-          --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/backend
+          docker build \
+          -t us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/backend:latest \
+          ./backend
+
+      #####################################################
+      # Push Backend
+      #####################################################
+
+      - name: Push Backend Image
+        run: |
+          docker push \
+          us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/backend:latest
+
+      #####################################################
+      # Deploy Backend
+      #####################################################
 
       - name: Deploy Backend
         run: |
           gcloud run deploy stadiummind-backend \
-          --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/backend \
-          --region us-central1 \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/backend:latest \
+          --region $REGION \
           --platform managed \
           --allow-unauthenticated
+
+      #####################################################
+      # Show URLs
+      #####################################################
+
+      - name: Display Services
+        run: |
+          echo "Frontend"
+          gcloud run services describe stadiummind-frontend \
+          --region $REGION \
+          --format='value(status.url)'
+
+          echo "Backend"
+          gcloud run services describe stadiummind-backend \
+          --region $REGION \
+          --format='value(status.url)'
