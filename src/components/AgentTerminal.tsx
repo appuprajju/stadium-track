@@ -111,8 +111,9 @@ export default function AgentTerminal({
 
           <form onSubmit={handleSimulateSubmit} className="space-y-4 text-sm">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Anomaly Type</label>
+              <label htmlFor="sim-anomaly-type" className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Anomaly Type</label>
               <select 
+                id="sim-anomaly-type"
                 value={simType} 
                 onChange={(e) => setSimType(e.target.value)}
                 className="w-full rounded-lg glass-input p-2.5 text-xs text-slate-200"
@@ -126,8 +127,9 @@ export default function AgentTerminal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Spatial Location</label>
+              <label htmlFor="sim-spatial-location" className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Spatial Location</label>
               <input 
+                id="sim-spatial-location"
                 type="text" 
                 value={simLoc} 
                 onChange={(e) => setSimLoc(e.target.value)}
@@ -137,8 +139,9 @@ export default function AgentTerminal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Raw Telemetry Alert Description</label>
+              <label htmlFor="sim-alert-description" className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Raw Telemetry Alert Description</label>
               <textarea 
+                id="sim-alert-description"
                 rows={3}
                 value={simDesc} 
                 onChange={(e) => setSimDesc(e.target.value)}

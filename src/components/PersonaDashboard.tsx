@@ -271,15 +271,17 @@ export default function PersonaDashboard({ activePersona, staff, onTriggerSOS }:
               </div>
 
               <form onSubmit={handleFanChatSubmit} className="flex gap-1">
+                <label htmlFor="fan-chat-input" className="sr-only">Ask Fan Copilot</label>
                 <input 
+                  id="fan-chat-input"
                   type="text" 
                   value={fanChatQuery}
                   onChange={(e) => setFanChatQuery(e.target.value)}
                   placeholder="Ask Fan Copilot..."
                   className="flex-1 rounded-xl bg-slate-900 border border-slate-800 p-2 text-slate-100 text-[11px] outline-none"
                 />
-                <button type="submit" className="p-2 rounded-xl bg-fifa-gold text-slate-950">
-                  <Send className="h-3.5 w-3.5" />
+                <button type="submit" aria-label="Send message to Fan Copilot" className="p-2 rounded-xl bg-fifa-gold text-slate-950">
+                  <Send className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </form>
             </div>
@@ -489,12 +491,12 @@ export default function PersonaDashboard({ activePersona, staff, onTriggerSOS }:
                 </span>
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-slate-700 bg-slate-800 text-fifa-gold" defaultChecked />
-                    <span className="line-through text-slate-500">Report to information desk at Gate B</span>
+                    <input id="shift-task-1" type="checkbox" className="rounded border-slate-700 bg-slate-800 text-fifa-gold" defaultChecked />
+                    <label htmlFor="shift-task-1" className="line-through text-slate-500">Report to information desk at Gate B</label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-slate-700 bg-slate-800 text-fifa-gold" />
-                    <span>Divert crowd arrivals toward Gate A (Congestion alert active)</span>
+                    <input id="shift-task-2" type="checkbox" className="rounded border-slate-700 bg-slate-800 text-fifa-gold" />
+                    <label htmlFor="shift-task-2">Divert crowd arrivals toward Gate A (Congestion alert active)</label>
                   </div>
                 </div>
               </div>
@@ -503,7 +505,9 @@ export default function PersonaDashboard({ activePersona, staff, onTriggerSOS }:
               <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
                 <span className="text-slate-400 font-semibold text-xs block">AI Translation Helper (English &rarr; Spanish)</span>
                 <div className="flex gap-1.5">
+                  <label htmlFor="translation-input" className="sr-only">English guidance to translate</label>
                   <input 
+                    id="translation-input"
                     type="text" 
                     value={transInput} 
                     onChange={(e) => setTransInput(e.target.value)}

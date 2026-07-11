@@ -198,7 +198,7 @@ export default function DigitalTwin({ gates, incidents, selectedIncidentId, onIn
 
       {/* Main Map Container */}
       <div className="relative flex-1 bg-slate-950/40 rounded-xl border border-slate-800/80 map-bg-grid flex items-center justify-center p-4" style={{ minHeight: '380px' }}>
-        <svg viewBox="0 0 800 500" className="w-full h-full max-h-[440px]">
+        <svg role="img" aria-label="Digital twin layout of the stadium and its sensor points" viewBox="0 0 800 500" className="w-full h-full max-h-[440px]">
           <defs>
             {/* Glow filters */}
             <filter id="glow-gold" x="-20%" y="-20%" width="140%" height="140%">
@@ -238,27 +238,43 @@ export default function DigitalTwin({ gates, incidents, selectedIncidentId, onIn
           {/* SECTORS / ZONE SHAPES - Interactive */}
           {/* North Zone */}
           <path d="M 330,160 C 370,140 430,140 470,160 L 480,105 C 430,85 370,85 320,105 Z" 
-                className="transition-all duration-300 cursor-pointer"
+                className="transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-fifa-gold"
+                role="button"
+                tabIndex={0}
+                aria-label="Select North Zone Seating Tier"
                 style={{ fill: getZoneColor('North Zone', selectedZone === 'North Zone'), stroke: selectedZone === 'North Zone' ? '#c5a059' : 'rgba(255,255,255,0.08)', strokeWidth: selectedZone === 'North Zone' ? 2 : 1 }}
                 onClick={() => { setSelectedZone(selectedZone === 'North Zone' ? null : 'North Zone'); setSelectedGateName(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedZone(selectedZone === 'North Zone' ? null : 'North Zone'); setSelectedGateName(null); } }}
           />
           {/* East Zone */}
           <path d="M 530,200 C 560,220 560,280 530,300 L 590,320 C 630,280 630,220 590,180 Z" 
-                className="transition-all duration-300 cursor-pointer"
+                className="transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-fifa-gold"
+                role="button"
+                tabIndex={0}
+                aria-label="Select East Zone Seating Tier"
                 style={{ fill: getZoneColor('East Zone', selectedZone === 'East Zone'), stroke: selectedZone === 'East Zone' ? '#c5a059' : 'rgba(255,255,255,0.08)', strokeWidth: selectedZone === 'East Zone' ? 2 : 1 }}
                 onClick={() => { setSelectedZone(selectedZone === 'East Zone' ? null : 'East Zone'); setSelectedGateName(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedZone(selectedZone === 'East Zone' ? null : 'East Zone'); setSelectedGateName(null); } }}
           />
           {/* South Zone */}
           <path d="M 330,340 C 370,360 430,360 470,340 L 480,395 C 430,415 370,415 320,395 Z" 
-                className="transition-all duration-300 cursor-pointer"
+                className="transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-fifa-gold"
+                role="button"
+                tabIndex={0}
+                aria-label="Select South Zone Seating Tier"
                 style={{ fill: getZoneColor('South Zone', selectedZone === 'South Zone'), stroke: selectedZone === 'South Zone' ? '#c5a059' : 'rgba(255,255,255,0.08)', strokeWidth: selectedZone === 'South Zone' ? 2 : 1 }}
                 onClick={() => { setSelectedZone(selectedZone === 'South Zone' ? null : 'South Zone'); setSelectedGateName(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedZone(selectedZone === 'South Zone' ? null : 'South Zone'); setSelectedGateName(null); } }}
           />
           {/* West Zone */}
           <path d="M 270,200 C 240,220 240,280 270,300 L 210,320 C 170,280 170,220 210,180 Z" 
-                className="transition-all duration-300 cursor-pointer"
+                className="transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-fifa-gold"
+                role="button"
+                tabIndex={0}
+                aria-label="Select West Zone Seating Tier"
                 style={{ fill: getZoneColor('West Zone', selectedZone === 'West Zone'), stroke: selectedZone === 'West Zone' ? '#c5a059' : 'rgba(255,255,255,0.08)', strokeWidth: selectedZone === 'West Zone' ? 2 : 1 }}
                 onClick={() => { setSelectedZone(selectedZone === 'West Zone' ? null : 'West Zone'); setSelectedGateName(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedZone(selectedZone === 'West Zone' ? null : 'West Zone'); setSelectedGateName(null); } }}
           />
 
           {/* Gate status lines & text */}
@@ -269,7 +285,15 @@ export default function DigitalTwin({ gates, incidents, selectedIncidentId, onIn
             const isGateSelected = selectedGateName === name;
             
             return (
-              <g key={name} className="cursor-pointer group" onClick={() => { setSelectedGateName(isGateSelected ? null : name); setSelectedZone(null); }}>
+              <g 
+                key={name} 
+                className="cursor-pointer group focus:outline-none" 
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${name} sensor metrics`}
+                onClick={() => { setSelectedGateName(isGateSelected ? null : name); setSelectedZone(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedGateName(isGateSelected ? null : name); setSelectedZone(null); } }}
+              >
                 {/* Connection Line */}
                 <line x1="400" y1="250" x2={coords.x} y2={coords.y} 
                       className={`stroke-[1.5] stroke-dasharray-[4,4] ${
@@ -423,7 +447,15 @@ export default function DigitalTwin({ gates, incidents, selectedIncidentId, onIn
             
             const isSelected = selectedIncidentId === inc.id;
             return (
-              <g key={inc.id} className="cursor-pointer" onClick={() => onIncidentSelect && onIncidentSelect(inc)}>
+              <g 
+                key={inc.id} 
+                className="cursor-pointer focus:outline-none" 
+                role="button"
+                tabIndex={0}
+                aria-label={`Select active incident: ${inc.title} at ${inc.location}`}
+                onClick={() => onIncidentSelect && onIncidentSelect(inc)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onIncidentSelect && onIncidentSelect(inc); } }}
+              >
                 {/* Selected highlight border ring */}
                 {isSelected && (
                   <circle cx={pos.x} cy={pos.y + 12} r="24" className="fill-none stroke-[#c5a059] stroke-[2.5] animate-pulse" filter="url(#glow-gold)" />

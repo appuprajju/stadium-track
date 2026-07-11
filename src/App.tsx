@@ -8,6 +8,8 @@ import {
   ShieldAlert, Activity, Users, 
   Sparkles, FileText, LayoutDashboard 
 } from 'lucide-react';
+import { colorForDensity, riskScore, etaMinutes, canApprove } from './utils/metrics';
+
 
 export default function App() {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -31,32 +33,7 @@ export default function App() {
     addAuditLog(`Role switched to ${role} WORKSPACE.`);
   };
 
-  // Replicated HTML verification algorithms for live testing suite
-  const colorForDensity = (pct: number): string => {
-    if (pct < 45) return '#2FD675';
-    if (pct < 70) return '#FFB94D';
-    return '#FF5D5D';
-  };
 
-  const riskScore = (densityPct: number, inflowRate: number, capacity: number): number => {
-    if (capacity <= 0) return 0;
-    const densityTerm = Math.min(100, densityPct) * 0.7;
-    const flowTerm = Math.min(100, (inflowRate / capacity) * 100) * 0.3;
-    return Math.round(densityTerm + flowTerm);
-  };
-
-  const etaMinutes = (distanceMeters: number, crowdFactor: number): number => {
-    const clamped = Math.max(0, Math.min(0.9, crowdFactor));
-    const speed = 1.3 * (1 - clamped);
-    if (speed <= 0) return Infinity;
-    return parseFloat((distanceMeters / speed / 60).toFixed(1));
-  };
-
-  const canApprove = (role: string, severity: string): boolean => {
-    if (role === 'OPERATIONS' || role === 'SECURITY') return true;
-    if (role === 'ECO' && severity !== 'CRITICAL' && severity !== 'HIGH') return true;
-    return false;
-  };
 
   const runTestSuite = () => {
     const results = [
@@ -400,7 +377,9 @@ export default function App() {
             <div className="text-slate-400 font-bold">Active Workspace</div>
             <div className="font-extrabold text-slate-300 uppercase tracking-wide">{activePersona} VIEW</div>
           </div>
+          <label htmlFor="workspace-role-select" className="sr-only">Active Workspace Role Selector</label>
           <select 
+            id="workspace-role-select"
             value={activePersona} 
             onChange={(e) => handleRoleChange(e.target.value as Persona)}
             className="rounded-lg glass-input p-2 text-xs font-bold text-slate-200"
@@ -472,8 +451,12 @@ export default function App() {
 
         {/* Tab control headers */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="tablist" aria-label="Dashboard Views">
             <button 
+              id="tab-dashboard"
+              role="tab"
+              aria-selected={activeTab === 'DASHBOARD'}
+              aria-controls="panel-content"
               onClick={() => setActiveTab('DASHBOARD')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-extrabold tracking-wide transition-all ${
                 activeTab === 'DASHBOARD' 
@@ -481,10 +464,14 @@ export default function App() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <LayoutDashboard className="h-4 w-4 text-fifa-gold" />
+              <LayoutDashboard className="h-4 w-4 text-fifa-gold" aria-hidden="true" />
               Live Operations Control
             </button>
             <button 
+              id="tab-specs"
+              role="tab"
+              aria-selected={activeTab === 'SPECS'}
+              aria-controls="panel-content"
               onClick={() => setActiveTab('SPECS')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-extrabold tracking-wide transition-all ${
                 activeTab === 'SPECS' 
@@ -492,10 +479,14 @@ export default function App() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <FileText className="h-4 w-4 text-fifa-gold" />
+              <FileText className="h-4 w-4 text-fifa-gold" aria-hidden="true" />
               System Specs & Blueprint (30 Items)
             </button>
             <button 
+              id="tab-diag-audit"
+              role="tab"
+              aria-selected={activeTab === 'DIAG_AUDIT'}
+              aria-controls="panel-content"
               onClick={() => setActiveTab('DIAG_AUDIT')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-extrabold tracking-wide transition-all ${
                 activeTab === 'DIAG_AUDIT' 
@@ -503,138 +494,140 @@ export default function App() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Activity className="h-4 w-4 text-fifa-gold" />
+              <Activity className="h-4 w-4 text-fifa-gold" aria-hidden="true" />
               Diagnostics & Audit Log
             </button>
           </div>
         </div>
 
         {/* Display Tab content */}
-        {activeTab === 'SPECS' ? (
-          <div className="flex-1">
-            <SpecHub />
-          </div>
-        ) : activeTab === 'DIAG_AUDIT' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch flex-1">
-            {/* Diagnostics Panel */}
-            <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between">
-              <div>
-                <h3 className="text-lg font-bold tracking-wide text-slate-100 mb-2 flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-emerald-500 animate-pulse" />
-                  System Diagnostics Suite
-                </h3>
-                <p className="text-xs text-slate-400 mb-4 font-medium">
-                  Runs the live unit-test assertions for crowd scoring, walking speed delays, and access-control RBAC configurations in this session.
-                </p>
-                <button 
-                  onClick={() => {
-                    const res = runTestSuite();
-                    setDiagResults(res);
-                    const passedCount = res.filter(r => r.pass).length;
-                    addAuditLog(`Diagnostics Executed: ${passedCount}/${res.length} assertions passed.`);
-                  }}
-                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors shadow-lg"
-                >
-                  Run Diagnostics Suite
-                </button>
-                
-                <div className="mt-4 space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                  {diagResults.length === 0 ? (
-                    <div className="text-xs text-slate-500 italic text-center py-10 border border-dashed border-slate-800 rounded-lg">
-                      No diagnostics executed in this session. Click the button above to run tests.
-                    </div>
-                  ) : (
-                    diagResults.map((res, idx) => (
-                      <div 
-                        key={idx} 
-                        className={`flex justify-between items-center text-xs p-2.5 rounded-lg border ${
-                          res.pass 
-                            ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' 
-                            : 'bg-red-500/5 border-red-500/20 text-red-400'
-                        }`}
-                      >
-                        <span className="font-medium">
-                          {res.pass ? '✓' : '✕'} {res.name}
-                        </span>
-                        <span className="text-[10px] opacity-75 font-mono">{res.detail}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-              {diagResults.length > 0 && (
-                <div className="text-xs text-slate-400 pt-4 border-t border-slate-800 flex justify-between items-center">
-                  <span>Summary: <strong className="text-slate-200">{diagResults.filter(r => r.pass).length} / {diagResults.length}</strong> checks passed.</span>
-                  <span className="text-emerald-400 font-extrabold text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">SYSTEM HEALTHY</span>
-                </div>
-              )}
+        <div role="tabpanel" id="panel-content" aria-labelledby={`tab-${activeTab.toLowerCase()}`} className="flex-1 flex flex-col">
+          {activeTab === 'SPECS' ? (
+            <div className="flex-1">
+              <SpecHub />
             </div>
+          ) : activeTab === 'DIAG_AUDIT' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch flex-1">
+              {/* Diagnostics Panel */}
+              <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-lg font-bold tracking-wide text-slate-100 mb-2 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-emerald-500 animate-pulse" aria-hidden="true" />
+                    System Diagnostics Suite
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-4 font-medium">
+                    Runs the live unit-test assertions for crowd scoring, walking speed delays, and access-control RBAC configurations in this session.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      const res = runTestSuite();
+                      setDiagResults(res);
+                      const passedCount = res.filter(r => r.pass).length;
+                      addAuditLog(`Diagnostics Executed: ${passedCount}/${res.length} assertions passed.`);
+                    }}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors shadow-lg"
+                  >
+                    Run Diagnostics Suite
+                  </button>
+                  
+                  <div className="mt-4 space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                    {diagResults.length === 0 ? (
+                      <div className="text-xs text-slate-500 italic text-center py-10 border border-dashed border-slate-800 rounded-lg">
+                        No diagnostics executed in this session. Click the button above to run tests.
+                      </div>
+                    ) : (
+                      diagResults.map((res, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`flex justify-between items-center text-xs p-2.5 rounded-lg border ${
+                            res.pass 
+                              ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' 
+                              : 'bg-red-500/5 border-red-500/20 text-red-400'
+                          }`}
+                        >
+                          <span className="font-medium">
+                            {res.pass ? '✓' : '✕'} {res.name}
+                          </span>
+                          <span className="text-[10px] opacity-75 font-mono">{res.detail}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                {diagResults.length > 0 && (
+                  <div className="text-xs text-slate-400 pt-4 border-t border-slate-800 flex justify-between items-center">
+                    <span>Summary: <strong className="text-slate-200">{diagResults.filter(r => r.pass).length} / {diagResults.length}</strong> checks passed.</span>
+                    <span className="text-emerald-400 font-extrabold text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">SYSTEM HEALTHY</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Audit Log Panel */}
-            <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between h-full">
-              <div>
-                <h3 className="text-lg font-bold tracking-wide text-slate-100 mb-2 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-fifa-gold" />
-                  Live Operational Audit Log
-                </h3>
-                <p className="text-xs text-slate-400 mb-4 font-medium">
-                  Accountability logs capturing role changes, incident dispatches, and administrator approvals in this session.
-                </p>
-                <div className="bg-slate-950/60 rounded-xl p-3.5 border border-slate-850 h-[320px] overflow-y-auto space-y-2 font-mono text-[10.5px] text-slate-300">
-                  {auditLogs.length === 0 ? (
-                    <div className="text-slate-600 italic text-center py-24">
-                      Audit console ready. Actions will populate logs here.
-                    </div>
-                  ) : (
-                    auditLogs.map((log, idx) => (
-                      <div key={idx} className="border-b border-slate-900 pb-1.5 last:border-0 leading-normal flex gap-1">
-                        <span className="text-slate-500 flex-shrink-0">{log.substring(0, 10)}</span>
-                        <span className="text-slate-200">{log.substring(10)}</span>
+              {/* Audit Log Panel */}
+              <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between h-full">
+                <div>
+                  <h3 className="text-lg font-bold tracking-wide text-slate-100 mb-2 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-fifa-gold" aria-hidden="true" />
+                    Live Operational Audit Log
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-4 font-medium">
+                    Accountability logs capturing role changes, incident dispatches, and administrator approvals in this session.
+                  </p>
+                  <div className="bg-slate-950/60 rounded-xl p-3.5 border border-slate-850 h-[320px] overflow-y-auto space-y-2 font-mono text-[10.5px] text-slate-300">
+                    {auditLogs.length === 0 ? (
+                      <div className="text-slate-600 italic text-center py-24">
+                        Audit console ready. Actions will populate logs here.
                       </div>
-                    ))
-                  )}
+                    ) : (
+                      auditLogs.map((log, idx) => (
+                        <div key={idx} className="border-b border-slate-900 pb-1.5 last:border-0 leading-normal flex gap-1">
+                          <span className="text-slate-500 flex-shrink-0">{log.substring(0, 10)}</span>
+                          <span className="text-slate-200">{log.substring(10)}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-500 italic mt-3 pt-3 border-t border-slate-900">
+                  🔒 Cryptographic session signature: MetLife-2026-SHA256 active &bull; RBAC verified
                 </div>
               </div>
-              <div className="text-[10px] text-slate-500 italic mt-3 pt-3 border-t border-slate-900">
-                🔒 Cryptographic session signature: MetLife-2026-SHA256 active &bull; RBAC verified
-              </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6 flex-1 flex flex-col justify-between">
-            {/* Top Grid: Stadium twin and persona sub-dashboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-              <div className="h-full">
-                <DigitalTwin 
-                  gates={gates} 
+          ) : (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              {/* Top Grid: Stadium twin and persona sub-dashboard */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                <div className="h-full">
+                  <DigitalTwin 
+                    gates={gates} 
+                    incidents={incidents} 
+                    selectedIncidentId={selectedIncidentId}
+                    onIncidentSelect={(inc) => setSelectedIncidentId(inc.id)}
+                  />
+                </div>
+                <div className="h-full">
+                  <PersonaDashboard 
+                    activePersona={activePersona} 
+                    gates={gates} 
+                    staff={staff}
+                    onTriggerSOS={(desc, loc) => triggerSimulationEvent('MEDICAL_EMERGENCY', desc, loc)}
+                  />
+                </div>
+              </div>
+
+              {/* Bottom Grid: Agent Terminal logs queue & simulated incident trigger */}
+              <div>
+                <AgentTerminal 
                   incidents={incidents} 
                   selectedIncidentId={selectedIncidentId}
-                  onIncidentSelect={(inc) => setSelectedIncidentId(inc.id)}
-                />
-              </div>
-              <div className="h-full">
-                <PersonaDashboard 
-                  activePersona={activePersona} 
-                  gates={gates} 
-                  staff={staff}
-                  onTriggerSOS={(desc, loc) => triggerSimulationEvent('MEDICAL_EMERGENCY', desc, loc)}
+                  onSelectIncident={setSelectedIncidentId}
+                  onApproveIncident={approveIncident}
+                  onSimulateEvent={triggerSimulationEvent}
+                  activePersona={activePersona}
                 />
               </div>
             </div>
-
-            {/* Bottom Grid: Agent Terminal logs queue & simulated incident trigger */}
-            <div>
-              <AgentTerminal 
-                incidents={incidents} 
-                selectedIncidentId={selectedIncidentId}
-                onSelectIncident={setSelectedIncidentId}
-                onApproveIncident={approveIncident}
-                onSimulateEvent={triggerSimulationEvent}
-                activePersona={activePersona}
-              />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Footer */}
