@@ -1,0 +1,53 @@
+name: Deploy StadiumMind AI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build Frontend
+        run: |
+          gcloud builds submit . \
+          --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/frontend
+
+      - name: Deploy Frontend
+        run: |
+          gcloud run deploy stadiummind-frontend \
+          --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/frontend \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated
+
+      - name: Build Backend
+        run: |
+          gcloud builds submit backend \
+          --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/backend
+
+      - name: Deploy Backend
+        run: |
+          gcloud run deploy stadiummind-backend \
+          --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/stadiummind-repo/backend \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated
