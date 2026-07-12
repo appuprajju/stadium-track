@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Incident, AgentStep, Persona } from '../types';
 import { Terminal, ShieldCheck, ShieldAlert, Cpu, Sparkles, UserCheck, Play } from 'lucide-react';
+import { canApprove } from '../utils/metrics';
 
 const formatTimeSafely = (timeStr: string) => {
   if (!timeStr) return '';
@@ -281,10 +282,7 @@ export default function AgentTerminal({
                     <strong>Mitigation Plan:</strong> {activeIncident.recommendation}
                   </p>
                   {(() => {
-                    const isAuthorized = 
-                      activePersona === 'OPERATIONS' || 
-                      activePersona === 'SECURITY' || 
-                      (activePersona === 'ECO' && activeIncident.severity !== 'CRITICAL' && activeIncident.severity !== 'HIGH');
+                    const isAuthorized = canApprove(activePersona, activeIncident.severity);
                     
                     return (
                       <>

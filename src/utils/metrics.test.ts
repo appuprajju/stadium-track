@@ -61,9 +61,10 @@ describe('Metrics & RBAC Calculations', () => {
   });
 
   describe('canApprove permissions (RBAC)', () => {
-    test('operations and security can approve all severities', () => {
+    test('operations, security, and medical can approve all severities', () => {
       expect(canApprove('OPERATIONS', 'CRITICAL')).toBe(true);
       expect(canApprove('SECURITY', 'CRITICAL')).toBe(true);
+      expect(canApprove('MEDICAL', 'CRITICAL')).toBe(true);
     });
 
     test('volunteer is always blocked from approvals', () => {
@@ -76,6 +77,13 @@ describe('Metrics & RBAC Calculations', () => {
       expect(canApprove('ECO', 'MEDIUM')).toBe(true);
       expect(canApprove('ECO', 'HIGH')).toBe(false);
       expect(canApprove('ECO', 'CRITICAL')).toBe(false);
+    });
+
+    test('handles case-insensitivity for roles and severities', () => {
+      expect(canApprove('operations', 'critical')).toBe(true);
+      expect(canApprove('security', 'high')).toBe(true);
+      expect(canApprove('eco', 'low')).toBe(true);
+      expect(canApprove('eco', 'critical')).toBe(false);
     });
   });
 });

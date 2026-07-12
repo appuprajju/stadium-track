@@ -57,6 +57,29 @@ npm run dev
 
 ---
 
+## Running Tests & Validation
+
+To guarantee robustness, reliability, and code excellence, StadiumMind AI features a comprehensive suite of unit and integration tests across both the frontend and backend architectures:
+
+### 1. Frontend Test Suite (Vitest)
+Unit tests for core calculations (walk-times, congestion index, and access-control RBAC permissions) are powered by **Vitest**:
+```bash
+# Run all frontend tests in single-run mode
+npm run test
+```
+
+### 2. Backend Test Suite (Python Unittest)
+API endpoints, DB schema seeding, RAG pipeline keywords scoring, and agent orchestrator workflows are validated using **isolated in-memory SQLite instances** (fully hermetic, no state leaks):
+```bash
+# Run all backend tests
+python -m unittest discover backend/tests
+```
+
+### 3. Live Dashboard Diagnostics
+Run the live unit-test assertions directly in the browser by navigating to the **System Specs & Blueprint** tab in the dashboard and clicking **"Run Diagnostics Suite"**.
+
+---
+
 ## Offline Telemetry & Hackathon Mode
 
 To ensure the system works seamlessly out-of-the-box for evaluation and local hackathon demonstrations without requiring a running Docker daemon:

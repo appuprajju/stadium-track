@@ -46,6 +46,7 @@ export default function App() {
       { name: 'etaMinutes: crowding increases walk time ETA', pass: etaMinutes(100, 0.9) > etaMinutes(100, 0), detail: `ETA crowded: ${etaMinutes(100, 0.9)} vs normal: ${etaMinutes(100, 0)}` },
       { name: 'RBAC: volunteer is blocked from approvals', pass: canApprove('VOLUNTEER', 'CRITICAL') === false, detail: 'Volunteer access locked' },
       { name: 'RBAC: operations can approve critical actions', pass: canApprove('OPERATIONS', 'CRITICAL') === true, detail: 'Operations access authorized' },
+      { name: 'RBAC: medical can approve critical actions', pass: canApprove('MEDICAL', 'CRITICAL') === true, detail: 'Medical access authorized' },
       { name: 'RBAC: eco can approve standard actions', pass: canApprove('ECO', 'LOW') === true, detail: 'Eco authorized standard' }
     ];
     return results;

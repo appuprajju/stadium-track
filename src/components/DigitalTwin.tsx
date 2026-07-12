@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Gate, Incident } from '../types';
 import { Info, Users, ShieldAlert, HeartPulse, Activity, Bus, Trash2 } from 'lucide-react';
+import { riskScore, etaMinutes } from '../utils/metrics';
 
 interface DigitalTwinProps {
   gates: Gate[];
@@ -69,20 +70,6 @@ export default function DigitalTwin({ gates, incidents, selectedIncidentId, onIn
     { id: 1, name: "Accessible Lift A", x: 310, y: 160 },
     { id: 2, name: "Accessible Ramp B", x: 490, y: 160 }
   ];
-
-  const riskScore = (densityPct: number, inflowRate: number, capacity: number): number => {
-    if (capacity <= 0) return 0;
-    const densityTerm = Math.min(100, densityPct) * 0.7;
-    const flowTerm = Math.min(100, (inflowRate / capacity) * 100) * 0.3;
-    return Math.round(densityTerm + flowTerm);
-  };
-
-  const etaMinutes = (distanceMeters: number, crowdFactor: number): number => {
-    const clamped = Math.max(0, Math.min(0.9, crowdFactor));
-    const speed = 1.3 * (1 - clamped);
-    if (speed <= 0) return Infinity;
-    return parseFloat((distanceMeters / speed / 60).toFixed(1));
-  };
 
   const getZoneDensity = (zone: string): number => {
     if (zone === 'North Zone') return Math.min(100, Math.round((gates.find(g => g.gate_name === 'Gate A')?.current_queue_size || 120) / 3));
