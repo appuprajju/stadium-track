@@ -7,7 +7,6 @@ node_modules/
 /build
 
 # Local env files (security best practice)
-.env
 .env.local
 .env.development.local
 .env.test.local
