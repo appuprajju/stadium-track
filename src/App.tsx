@@ -13,6 +13,11 @@ import { colorForDensity, riskScore, etaMinutes, canApprove } from './utils/metr
 
 export default function App() {
   const API_URL = import.meta.env.VITE_API_URL;
+  if(!API_URL){
+    throw new Error(
+      "VITE_API_URL MIssing or not defined please check your .env.production file"
+    )
+  }
   const WS_URL = API_URL.replace(/^http/, "ws")
   const [activePersona, setActivePersona] = useState<Persona>('OPERATIONS');
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'SPECS' | 'DIAG_AUDIT'>('DASHBOARD');
